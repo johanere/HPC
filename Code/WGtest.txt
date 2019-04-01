@@ -1,0 +1,7 @@
+# Directed graph (each unordered pair of nodes is saved once): 100nodes_graphs.txt
+# Another example
+# Nodes: 100 Edges: 250
+0 9
+0 14
+0 45
+1 19

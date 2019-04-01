@@ -1,0 +1,21 @@
+
+Retrieve #nodes from file
+Initialize arrays: inbound[#nodes] outbound[#nodes] row[#nodes] selflink[#nodes]
+
+Iterate (i=Fromnode,j=tonode)
+if i =! j:
+	outbound[i]=++
+	inbound[j]=++
+else:
+	selflink[i]=++
+
+set row[0]=0
+for i=1 to i=#nodes
+	row[i]=row[i-1]+inbound[i]
+
+//er igjen å bestemme col og val
+initialize val[sum(inbound)] col[?]
+iterate (i=fromnode,j=tonode):
+	//number of values in row=inbound[i]
+	col[i+sum(inbound(0:i)]=j
+	val[i + ?]=1/outbound[j]
