@@ -93,3 +93,9 @@ int main ()
      printf ("%d ",values[n]);
   return 0;
 }
+
+
+to do:
+
+void read_to_crs( ta 4 pointers; *int col, *int row, *int dangling, *float var)
+så mekk på pointerene inne i funksjonen!
