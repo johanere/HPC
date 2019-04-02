@@ -13,9 +13,83 @@ set row[0]=0
 for i=1 to i=#nodes
 	row[i]=row[i-1]+inbound[i]
 
-//er igjen å bestemme col og val
-initialize val[sum(inbound)] col[?]
+initialize val[sum(inbound)] col[sum(inbound)]
 iterate (i=fromnode,j=tonode):
 	//number of values in row=inbound[i]
-	col[i+sum(inbound(0:i)]=j
-	val[i + ?]=1/outbound[j]
+  i,j = get
+  min_col=row[i]
+  while(col[min_col]<-1)
+  {min_col++}
+  col[min_col]=j
+  val[min_col]=1/outbound[j]
+
+//sorting
+columnpointer=0;
+for i in range(1,len(row))
+  nodesincolumn=row[i]-row[i-1]
+  qsort(col[i:i+nodesincolumn],nodesincolumn,sizeof(int),compare)
+
+
+  int compare (const void * a, const void * b)
+  {
+    return ( *(int*)a - *(int*)b );
+  }
+
+
+1 2
+1 0
+2 1
+3 1
+0 1
+0 2
+0 3
+
+[0   1/3    1/2     1]
+[1    0     1/2     0]
+[0   1/3    0       0]
+[0   1/3    0       0]
+
+inbound=[3,2,1,1]
+outbound=[1,3,2,1]
+row=[0,3,5,6]
+
+col=[1,2,3,0,2,1,1]
+val=[1/3,1/2,1,1,1/2,1/3,1/3]
+
+col[ , , , , , , , , , , , , ]
+
+i,j = get
+min_col=row[i]
+while(col[min_col]<-1)
+{min_col++}
+col[min_col]=j
+
+
+
+
+index=row[i]
+while (col[i]=! empty):
+  [i=i++]
+  col[i]=j
+val[row[i+1]-row[i]]
+
+
+/* qsort example */
+#include <stdio.h>      /* printf */
+#include <stdlib.h>     /* qsort */
+
+int values[] = { 40, 10, 100, 90, 20, 25 };
+
+int compare (const void * a, const void * b)
+{
+  return ( *(int*)a - *(int*)b );
+}
+
+int main ()
+{
+  int n;
+  qsort (values, 6, sizeof(int), compare);
+  for (n=0; n<6; n++)
+     printf ("%d ",values[n]);
+  return 0;
+}

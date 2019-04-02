@@ -24,16 +24,31 @@ int main()
 
     // read Nodes and Edges from line three
     fscanf(fp,"%*s %*s %d  %*s %d ",&Nodes,&Edges);
-    printf("%d %d \n", Nodes, Edges);
+
+    int *inbound=(int*)calloc(Nodes,sizeof(int)); //length of not same as nodes
+    int *outbound=(int*)calloc(Nodes,sizeof(int)); //length of not same as nodes
+    int *selflink=(int*)calloc(Nodes,sizeof(int));
 
     int n1,n2;
-    while(fscanf(fp,"%d %d",&n1,&n2) =)
-    {
-    printf("%d %d\n", n1,n2);
+    printf("init vec, #nodes %d \n",Nodes);
+    for (int i=0;i<Nodes;i++){
+    printf("%d\n",selflink[i] );
     }
 
 
+    while (fscanf(fp,"%d %d",&n1,&n2)==2)
+    {
+      if (n1==n2) {printf("blaG\n"); selflink[n1]+=1; }
+      else {inbound[n1]+=1; outbound[n2]+=1;}
+    }
 
+    printf("control: \n" );
+    for (int i=0;i<Nodes;i++){
+      printf("%d %d\n",i, selflink[i] );
+    }
+
+    free(inbound);
+    free(outbound);
 }
 /*
 
