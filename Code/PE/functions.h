@@ -7,6 +7,6 @@
 void swap(int *a, int *b);
 void quicksort(int arr[], int l, int r);
 void printArray(int arr[], int size);
-void read_to_crs(const char *filename);
+void read_to_crs(const char *filename, int *row_ptr);
 void PageRank_iterations();
 #endif

@@ -1,18 +1,20 @@
 #define getName(var)  #var
 #include "functions.h"
 
-void read_to_crs(const char *filename)
+void read_to_crs(const char *filename,int **pp1, int**pp2, float **pp3, int **pp4, int *Nodes,int *tot_link,int *number_dangling)
 {
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
-    int n1,n2, Nodes,Edges, tot_link=0, min_index, max_index,nodes_in_row,j,number_dangling=0;
+    int n1,n2, Edges, min_index, max_index,nodes_in_row,j;
     char p, buffer[100];;
 
     int *inbound, *outbound, *selflink, *col, *row_ptr, *dangling;
     float *val;
 
+    *tot_link=0;
+    *number_dangling=0;
     //opening file
     fp = fopen(filename, "r");
     if (fp == NULL)
@@ -23,36 +25,36 @@ void read_to_crs(const char *filename)
     fgets(buffer, 100, fp);
 
     // read number of Nodes (and Edges) and skip line
-    fscanf(fp,"%*s %*s %d  %*s %d ",&Nodes,&Edges);
+    fscanf(fp,"%*s %*s %d  %*s %d ",Nodes,&Edges);
     fgets(buffer, 100, fp);
 
     // allocate mem for arrays to hold data from initial file iteration
-    inbound=(int*)calloc(Nodes,sizeof(int));
-    outbound=(int*)calloc(Nodes,sizeof(int));
-    selflink=(int*)calloc(Nodes,sizeof(int));
+    inbound=(int*)calloc(*Nodes,sizeof(int));
+    outbound=(int*)calloc(*Nodes,sizeof(int));
+    selflink=(int*)calloc(*Nodes,sizeof(int));
 
     //initial file read
     while (fscanf(fp,"%d %d",&n1,&n2)==2)
     {
-      if (n1==n2) {printf("blaG\n"); selflink[n1]+=1; } //check for and count self linking
-      else {inbound[n1]+=1; outbound[n2]+=1; tot_link+=1;} //count number of links to and from each node
+      if (n1==n2) {selflink[n1]+=1; } //check for and count self linking
+      else {inbound[n1]+=1; outbound[n2]+=1; *tot_link+=1;} //count number of links to and from each node
     }
 
 
     // allocate mem for CRS arrays
-    row_ptr=(int*)malloc((Nodes+1)*sizeof(int)); //rows
-    val=(float*)calloc(tot_link,sizeof(int)); //values
-    col=(int*)calloc(tot_link,sizeof(int)); //columns
+    row_ptr=(int*)malloc((*Nodes+1)*sizeof(int)); //rows
+    val=(float*)calloc(*tot_link,sizeof(float)); //values
+    col=(int*)calloc(*tot_link,sizeof(int)); //columns
 
     //set col values to control value
-    for (int i=0;i<tot_link;i++)
+    for (int i=0;i<*tot_link;i++)
     {
       col[i]=-1;
     }
 
     //calculate row pointer
     row_ptr[0]=0;
-    for (int i=0;i<Nodes;i++)
+    for (int i=0;i<*Nodes;i++)
     {
       row_ptr[i+1]=row_ptr[i]+inbound[i];
     }
@@ -85,7 +87,7 @@ void read_to_crs(const char *filename)
     //int fclose(FILE *fp);
 
     //sort col vec
-    for(int i=0;i<Nodes;i++)
+    for(int i=0;i<*Nodes;i++)
     {
       if(inbound[i]>1) //only sort if more than one inbound link
       {
@@ -94,36 +96,35 @@ void read_to_crs(const char *filename)
         quicksort(col,min_index,max_index); //sort elements belongning to node i using quicksort
       }
     }
-    printArray(row_ptr,Nodes+1);
-    printArray(col,tot_link);
-    for (int i=0;i<tot_link;i++)
+
+    for (int i=0;i<*tot_link;i++)
     {
       if (outbound[col[i]] != 0)
       {
       val[i]=1.0/(outbound[col[i]]); //set value[i] to 1/total number of outgoing links from node
       }
-      printf("%f ",val[i] );
     }
     printf(" \n" );
 
 
     //check for dangling pages
-    for (int i=0;i<Nodes;i++)
+    for (int i=0;i<*Nodes;i++)
     {
-      if (outbound[i]==0)
+        if (outbound[i]==0)
       {
-        number_dangling+=1;
+        *number_dangling+=1;
       }
     }
+
+
     // if there are dangling wepages, initiate and fill array dangling with index of dangling webpages
-    if (number_dangling>0)
-    {
-      dangling=(int*)calloc(number_dangling,sizeof(int));
-      printf("Dangling webpages, array \"dangling\" non-empty \n" );
-      int d_counter=0;
-      for (int i=0;i<Nodes;i++)
+      dangling=(int*)calloc(*number_dangling,sizeof(int));
+      if (*number_dangling>0)
       {
-        if (outbound[i] == 0)
+      int d_counter=0;
+      for (int i=0;i<*Nodes;i++)
+      {
+        if (outbound[i]==0)
         {
           dangling[d_counter]=i;
           d_counter++;
@@ -131,26 +132,84 @@ void read_to_crs(const char *filename)
       }
     }
 
-
+    *pp1=col;
+    *pp2=row_ptr;
+    *pp3=val;
+    *pp4=dangling;
     // free allocated mem
     free(inbound);
     free(outbound);
     free(selflink);
-    free(row_ptr);
-    free(val);
-    free(col);
-    if (number_dangling>0)
-    {free(dangling);}
+
+
 }//end of read_to_crs function
 
 
-void PageRank_iterations()
+void PageRank_iterations(int *col,int *row_ptr, float *val, int *dangling, int *Nodes,int *tot_link, int *number_dangling,float **pp1,float d,float eps)
 {
-printf("pagerank_iterations entered \n" );
+float *pagerank,*newrank;
+pagerank=(float*)calloc(*Nodes,sizeof(float)); //array holding page rank of pages
+newrank=(float*)calloc(*Nodes,sizeof(float)); //array holding new page rank of pages
+
+float w=0;
+float factor;
+
+float n=(float)*Nodes; //normalization constant
+
+if (*number_dangling==0) //no dangling pages meand w is constantly 0, thus the factor used in calc. page rank is simplified
+{
+  factor=(1-d)/n;
+}
+
+for (int i=0;i<*Nodes;i++) //setting pagerank to initial guess using normalization constant n
+{
+pagerank[i]=1/n;
+}
+
+
+int iterations=0; //iteraitons counter
+float maxerr=1.0; //initial error value IOT enter loop
+while(maxerr>eps)
+{
+  iterations+=1;
+  maxerr=0; // reset error
+
+  if (*number_dangling>0) //calculate new w in case of danlging threads
+  {
+    w=0;
+    for (int i=0;i<*number_dangling;i++)
+    {
+      w += pagerank[dangling[i]];
+    }
+    factor=(1-d+d*w)/n;
+  }
+#pragma omp parallel
+{
+  for(int i=0; i<*Nodes;i++) //calculate new pageranks
+  {
+    for(int j=row_ptr[i];j<row_ptr[i+1];j++)
+    {
+      newrank[i]=newrank[i]+val[j]*(pagerank[col[j]]);
+    }
+    newrank[i]=d*newrank[i]+factor;
+    if (fabs(newrank[i]-pagerank[i])>maxerr) //test if delta between new and old pagerank of page i is the largest delta
+    {
+      maxerr=fabs(newrank[i]-pagerank[i]); //update maximum error
+    }
+  }
+  for(int i=0; i<*Nodes;i++)
+  {
+  pagerank[i]=newrank[i]; //set pagerank to new page rank
+  newrank[i]=0; //reset newrank array for next iteration
+  }
+}
+}
+//printf("Iterations = %d\n",iterations );
+
+//de-alloc
+*pp1=pagerank;
+free(newrank);
 }//end of PageRank_iterations function
-
-
-
 
 
 // Function to swap two pointers

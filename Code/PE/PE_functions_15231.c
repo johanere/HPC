@@ -1,17 +1,21 @@
 #define getName(var)  #var
 #include "functions.h"
 
-void read_to_crs(const char *filename)
+void read_to_crs(const char *filename, int *row_ptr);
 {
+    int *col;
+    float *val;
+    int *dangling;
+
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
     int n1,n2, Nodes,Edges, tot_link=0, min_index, max_index,nodes_in_row,j,number_dangling=0;
-    char p, buffer[100];;
+    char p, buffer[100];
 
-    int *inbound, *outbound, *selflink, *col, *row_ptr, *dangling;
-    float *val;
+    int *inbound, *outbound, *selflink;
+;
 
     //opening file
     fp = fopen(filename, "r");
@@ -98,7 +102,7 @@ void read_to_crs(const char *filename)
     printArray(col,tot_link);
     for (int i=0;i<tot_link;i++)
     {
-      if (outbound[col[i]] != 0)
+      if (outbound[i] != 0)
       {
       val[i]=1.0/(outbound[col[i]]); //set value[i] to 1/total number of outgoing links from node
       }
@@ -136,11 +140,10 @@ void read_to_crs(const char *filename)
     free(inbound);
     free(outbound);
     free(selflink);
-    free(row_ptr);
     free(val);
     free(col);
-    if (number_dangling>0)
-    {free(dangling);}
+    if (number_dangling>0){free(dangling);}
+
 }//end of read_to_crs function
 
 
