@@ -1,0 +1,187 @@
+%%
+%% Automatically generated file from DocOnce source
+%% (https://github.com/hplgit/doconce/)
+%%
+%%
+
+
+%-------------------- begin preamble ----------------------
+
+\documentclass[%
+oneside,                 % oneside: electronic viewing, twoside: printing
+final,                   % draft: marks overfull hboxes, figures with paths
+10pt]{article}
+
+\listfiles               %  print all files needed to compile this document
+
+
+\usepackage[totoc]{idxlayout}   % for index in the toc
+\usepackage[nottoc]{tocbibind}  % for references/bibliography in the toc
+
+\usepackage{relsize,makeidx,color,setspace,amsmath,amsfonts,amssymb}
+\usepackage[table]{xcolor}
+\usepackage{bm,ltablex,microtype}
+\usepackage{comment} 
+\usepackage[pdftex]{graphicx}
+
+\usepackage{fancyvrb} % packages needed for verbatim environments
+
+\usepackage[T1]{fontenc}
+%\usepackage[latin1]{inputenc}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{lmodern}         % Latin Modern fonts derived from Computer Modern
+
+
+\usepackage{pgfplotstable, booktabs}
+
+\pgfplotstableset{
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+}
+
+
+
+
+
+% Hyperlinks in PDF:
+\definecolor{linkcolor}{rgb}{0,0,0.4}
+\usepackage{hyperref}
+\hypersetup{
+    breaklinks=true,
+    colorlinks=true,
+    linkcolor=linkcolor,
+    urlcolor=linkcolor,
+    citecolor=black,
+    filecolor=black,
+    %filecolor=blue,
+    pdfmenubar=true,
+    pdftoolbar=true,
+    bookmarksdepth=3   % Uncomment (and tweak) for PDF bookmarks with more levels than the TOC
+    }
+%\hyperbaseurl{}   % hyperlinks are relative to this root
+
+\setcounter{tocdepth}{2}  % levels in table of contents
+
+% --- fancyhdr package for fancy headers ---
+\usepackage{fancyhdr}
+\fancyhf{} % sets both header and footer to nothing
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[LE,RO]{\thepage}
+% Ensure copyright on titlepage (article style) and chapter pages (book style)
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{{\footnotesize \copyright\ 1999-2018, "Computational Physics I FYS3150/FYS4150":"http://www.uio.no/studier/emner/matnat/fys/FYS3150/index-eng.html". Released under CC Attribution-NonCommercial 4.0 license}}
+%  \renewcommand{\footrulewidth}{0mm}
+  \renewcommand{\headrulewidth}{0mm}
+}
+% Ensure copyright on titlepages with \thispagestyle{empty}
+\fancypagestyle{empty}{
+  \fancyhf{}
+  \fancyfoot[C]{{ }}
+  \renewcommand{\footrulewidth}{0mm}
+  \renewcommand{\headrulewidth}{0mm}
+}
+
+\pagestyle{fancy}
+
+
+% prevent orhpans and widows
+\clubpenalty = 10000
+\widowpenalty = 10000
+
+% --- end of standard preamble for documents ---
+
+
+% insert custom LaTeX commands...
+
+\raggedbottom
+\makeindex
+\usepackage[totoc]{idxlayout}   % for index in the toc
+\usepackage[nottoc]{tocbibind}  % for references/bibliography in the toc
+\usepackage{listings}
+\usepackage[normalem]{ulem} 	%for tables
+\useunder{\uline}{\ul}{}
+\usepackage{hyperref}
+\usepackage[section]{placeins} %force figs in section
+
+\usepackage{natbib}
+
+
+%-------------------- end preamble ----------------------
+
+\begin{document}
+
+% matching end for #ifdef PREAMBLE
+
+\newcommand{\exercisesection}[1]{\subsection*{#1}}
+
+
+% ------------------- main content ----------------------
+
+
+
+% ----------------- title -------------------------
+
+\thispagestyle{empty}
+
+\begin{center}
+{\LARGE\bf
+\begin{spacing}{1.25}
+Home exam HPC spring 2019
+\end{spacing}
+}
+\end{center}
+
+% ----------------- author(s) -------------------------
+
+\begin{center}
+{\bf Candidate: 15231}
+\end{center}
+
+    \begin{center}
+% List of all institutions:
+\centerline{{\small University of Oslo, Norway}}
+\end{center}
+    
+% ----------------- end author(s) -------------------------
+
+% --- begin date ---
+\begin{center}
+Mar 3, 2019
+\end{center}
+% --- end date ---
+
+\textit{\textbf{Author's comment:} The program is not producing the expected results, and appears to be faulty. Writing the code took a lot more time than I had thought it would, mostly due to a combination of  constraints from other mid term exams and my inadequacies in c. This has made me learn a lot of c basics - which I am very grateful for, but it has unfortunately taken focus away from optimization and unit testing.  More on this under "\textbf{Program Discrepancies}}".
+
+\section{Scope of program}
+The program compiled with c from the files submitted with this report is built to read a file containing webpage linkage information and process that information. Provided a filename, a dampening constant $d$, a convergence threshold $\epsilon$, and the number $n$ of top ranked webpages to display, the program first reads through the linkage information, storing the linkage pattern in a hyperlink matrix using the Compressed Sparse Row (CRS) form. Furthermore, the program finds which webpages classify as dangling webpages (webpages with no outgoing links), and subsequently utilizes the PageRank algorithm with $d$ and $\epsilon$,  to find the true PageRank of each webpage.  Lastly, the program sorts the webpages according to their PageRank, and displays the top $n$ ranked pages and the total run time of the program.
+
+\section{Program flow}
+\paragraph{Initiation:}
+The code is centered on the main file \textit{PE\_main\_15231.c}, in which calls to functions from \textit{PE\_functions\_15231.c} is made. The main program first reads command line arguments, then declares array pointers and variable pointers, as well as global variables. Having declared variables, the program starts a clock in order to obtain run time, using \textit{omp\_get\_wtime()}. After printing the name of the file to the terminal, the main function then makes a call to the \textit{read\_to\_crs}. After CRS arrays are filled in, the number of nodes, total number of links and the number of dangling pages are printed to terminal. Then, the main function calls the \textit{PageRank\_iterations} function in order to compute the page rankings, before these are sorted using the \textit{top\_n\_webpages} function. The resulting top $n$ functions are printed to terminal along with the dampening factor $d$ and the iteration threshold $\epsilon$. Lastly, the final run time is computed and printed to terminal before all array pointers are de-allocated.
+\paragraph{read\_to\_crs function: } The array pointers used in the CRS representation of the hyperlink matrix, an array pointer to store the indices of any dangling pages variables, as well as pointers to variables for number of nodes, total number of links, and the number of dangling pages is passed to the read\_to\_crs function. The function allocates arrays for the number of inbound links, outbound links, and the number of selflinks for each page/node. These pointers are filled in on the go as the function iterates the columns in the data file. Using the number of inbound links, the row pointer (CRS) is filled in, before the column pointer is assigned values - initially as first encountered per hyperlink matrix row. As the column index increases whilst traversing nodes per row, the initial column pointer values are sorted using quick sort per row, such that they correspond to the hyperlink matrix. The value pointer is then filled in, using the number of outgoing links per column as normalization factor. Lastly, each column is summed up, and any webpage corresponding to a column summing to zero is marked as dangling.
+
+\paragraph{PageRank\_iterations function}
+In this function, arrays to store initial pagerank guesses ($1/(\#nodes)$) and newly computed pageranks are allocated. For a data set corresponding to no dangling pages, $W$ is pre-calculated as it is fixed for all iterations. The function then enters a while loop, which is exited at $max(\delta)<\epsilon$, where $\delta$ is absolute difference between the newly computed rank of each node and it's former value. Inside the while loop, each new rank is computed according to the PageRank algorithm, employing the CRS provided from the main function. In an attempt to speed up these calculations, shared memory parallelization is implemented using OpenMP on the node iteration, with a critical point inserted at the $\delta$ vs $\epsilon$ step, before current rank is set to the newest value.
+
+\paragraph{top\_n\_webpages function}
+The function first allocates an array to store the sorted values of page ranks, and the correspondingly sorted node indexes. Iterating through the nodes, a struct named object holding rank and index is then made. The struct is then sorted using qsort on the underlying object ranks. The struct is then unpacked, and rank and indexes unloaded onto the arrays, which are then handed off to main before being de-allocated. 
+
+\section{Program Discrepancies}
+\textit{Throughout all program testing, gcc 7.3.0 for Ubuntu has been used.}\paragraph{}
+The program is not producing the expected results when tested with  100-node web graph from the course web page. I noticed this test set slightly too late, and had only been testing on the the 8-webpage example provided through the exam paper while writing the code- on which the program produced the expected results.  \par 
+If I had more time, I would go through the handling of dangling pages and self linking more carefully, as I expect that the fault may lie here or/and in the PageRank algorithm implementation. Regarding dangling pages, it is somewhat unclear to me whether or not nodes with no outgoing or ingoing links should be counted or not. In the exam paper, dangling pages are defined as pages corresponding to hyperlink matrix columns summing to zero. However, the hyperlink matrix is a matrix representing linkage between linked pages, and such pages as mentioned above are not after all linked.Thus further work on the program would for my part require a better understanding of the PageRank algorithm in addition to the implementation of unit testing.   \par 
+The program runs through the "web-NotreDame" data set in $\approx 2.7$ seconds, using $d=0.85$ and $\epsilon=1 \cdot 10^{-6}$, when run on an Intel i7 @3.20Ghz. Pulling on the 4 core/ 8 logical processors I get approximately the same time, which indicates that the program has a faulty PageRank algorithm implementation. For this reason examination of run time for the function is regrettably omitted. Further decreases in $\epsilon$ results in only marginally increased run times, which also indicates implementation discrepancies or counting errors. \par 
+As I have devoted most of the time close to the deadline in trying to rectify the faulty behavior, I have not been able to optimize fully. There are numerous code parts in which this should have been done, such as the pre-calculation of parts of the terms involved in finding $w$ in the case of dangling pages in the PageRank\_iterations function, and the rewriting of several of the loops used in both read\_to\_crs and PageRank\_iterations.
+\end{document}
+
+
+
+
+
+% ------------------- end of main content ---------------
+
+
+
