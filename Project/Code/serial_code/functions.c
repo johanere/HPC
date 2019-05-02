@@ -81,7 +81,7 @@ void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters)
   //swap such that the new values are old values for the next iteration
   swaparrays((void*)&u, (void*)&u_bar);
   }
-  //swap to make sure u_bar is the newest version after iteration
+  //swap to make sure u_bar is the newest version after all iterations are completed
   swaparrays((void*)&u, (void*)&u_bar);
 
 }//end of iso_diffusion_denoising function
