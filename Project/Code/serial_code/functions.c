@@ -61,7 +61,7 @@ void iso_diffusion_denoising(image *u, image *u_bar, float kappa, int iters)
   }
 
   //boundary pixels vertical
-  for (int i = 0; i < u->m-2; i++) //iterate rows
+  for (int i = 0; i < u->m; i++) //iterate rows
   {
     u_bar->image_data[i][0]=u->image_data[i][0];
     u_bar->image_data[i][u->n-1]=u->image_data[i][u->n-1];
